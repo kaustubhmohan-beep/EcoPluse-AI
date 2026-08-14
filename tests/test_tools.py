@@ -10,8 +10,8 @@ import time
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-PASS = "✅ PASS"
-FAIL = "❌ FAIL"
+PASS = "[PASS]"
+FAIL = "[FAIL]"
 
 def run_test(name, fn):
     try:
@@ -231,22 +231,74 @@ def test_agent_microwave_energy_calculation():
 def test_agent_out_of_domain_query():
     from src.agent import EcoPulseAgent
     a = EcoPulseAgent()
-    response = a.process("which are the guns used in war")
+    q = "who is prime minister of india"
+    response = a.process(q)
     return (
-        "cannot answer this question" in response.lower() and
-        "outside my domain" in response.lower() and
+        "General Knowledge & Context" in response and
+        "Narendra Modi" in response and
+        "EcoPulse AI Domain Focus" in response and
         "JETIR Research" not in response
     )
+
+def test_agent_multiple_unrelated_queries():
+    from src.agent import EcoPulseAgent
+    a = EcoPulseAgent()
+    unrelated_queries = [
+        ("who is prime minister of india", "Narendra Modi"),
+        ("what is the capital of France", "Paris"),
+        ("which are the guns used in war", "firearms"),
+        ("who won the FIFA World Cup in 2022", "Argentina"),
+        ("how to bake a pepperoni pizza at home", "pepperoni")
+    ]
+    for q, expected_keyword in unrelated_queries:
+        resp = a.process(q)
+        if "General Knowledge & Context" not in resp:
+            print(f"Failed header check for query: {q}")
+            return False
+        if expected_keyword.lower() not in resp.lower():
+            print(f"Failed keyword match for query: {q}")
+            return False
+        if "EcoPulse AI Domain Focus" not in resp:
+            return False
+        if "JETIR Research" in resp or "Verified Conservation Guidelines" in resp:
+            return False
+    return True
 
 
 # ─────────────────────────────────────────────────────────────
 # RUN ALL TESTS
 # ─────────────────────────────────────────────────────────────
 
+PASS = "[PASS]"
+FAIL = "[FAIL]"
+
+def run_test(name, fn):
+    try:
+        t0 = time.time()
+        result = fn()
+        elapsed = int((time.time() - t0) * 1000)
+        if result:
+            print(f"{PASS} [{elapsed:>4}ms]  {name}")
+            return True
+        else:
+            print(f"{FAIL}           {name}")
+            return False
+    except Exception as e:
+        print(f"{FAIL}           {name}  |  Error: {e}")
+        return False
+
+# ─────────────────────────────────────────────────────────────
+# STAGE 1: DuckDB Data Engine Tests
+# ─────────────────────────────────────────────────────────────
+# ... (rest of file remains)
+# ─────────────────────────────────────────────────────────────
+# RUN ALL TESTS
+# ─────────────────────────────────────────────────────────────
+
 if __name__ == "__main__":
-    print("\n" + "═" * 72)
-    print("  EcoPulse AI — Stage 4 Verification Test Suite")
-    print("═" * 72 + "\n")
+    print("\n" + "=" * 72)
+    print("  EcoPulse AI -- Stage 4 Verification Test Suite")
+    print("=" * 72 + "\n")
 
     test_groups = [
         ("STAGE 1: DuckDB Data Engine", [
@@ -277,23 +329,24 @@ if __name__ == "__main__":
             ("Conservation query returns CFL/LED advice",    test_agent_conservation_query),
             ("Full meter workflow returns kWh diagnostics",  test_agent_full_meter_workflow),
             ("Microwave 15 min energy math calculation",    test_agent_microwave_energy_calculation),
-            ("Out-of-domain query returns cannot-answer fallback", test_agent_out_of_domain_query),
+            ("Out-of-domain query returns general answer & bridge", test_agent_out_of_domain_query),
+            ("Multiple unrelated queries return domain guide", test_agent_multiple_unrelated_queries),
         ]),
     ]
 
     total, passed = 0, 0
     for group_name, tests in test_groups:
-        print(f"  📂 {group_name}")
-        print("  " + "─" * 60)
+        print(f"  [Group] {group_name}")
+        print("  " + "-" * 60)
         for test_name, test_fn in tests:
             total += 1
             if run_test(test_name, test_fn):
                 passed += 1
         print()
 
-    print("═" * 72)
+    print("=" * 72)
     print(f"  Results: {passed}/{total} tests passed  ({int(passed/total*100)}% pass rate)")
-    status_icon = "✅ ALL TESTS PASSED" if passed == total else f"⚠️  {total - passed} TESTS FAILED"
+    status_icon = "[SUCCESS] ALL TESTS PASSED" if passed == total else f"[WARNING] {total - passed} TESTS FAILED"
     print(f"  {status_icon}")
-    print("═" * 72 + "\n")
+    print("=" * 72 + "\n")
     sys.exit(0 if passed == total else 1)

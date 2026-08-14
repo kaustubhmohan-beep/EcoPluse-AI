@@ -167,10 +167,10 @@ class RAGIndexer:
         self.tfidf_matrix = self.vectorizer.fit_transform(corpus)
         logger.info("TF-IDF Vector Index built successfully.")
 
-    def search(self, query: str, category: Optional[str] = None, top_k: int = 4) -> List[Dict[str, Any]]:
+    def search(self, query: str, category: Optional[str] = None, top_k: int = 4, min_similarity: float = 0.75) -> List[Dict[str, Any]]:
         """
         Hybrid semantic & keyword search over indexed knowledge chunks.
-        Returns top-k most relevant chunks with similarity scores.
+        Returns only matches above a strict cosine-similarity confidence threshold.
         """
         if not self.chunks or self.vectorizer is None or self.tfidf_matrix is None:
             return []
@@ -195,37 +195,32 @@ class RAGIndexer:
         query_vec = self.vectorizer.transform([query])
         sim_scores = cosine_similarity(query_vec, self.tfidf_matrix).flatten()
 
-        # Filter query terms: exclude stop words and short terms
         query_terms = set(w for w in re.findall(r'\w+', query.lower()) if w not in stop_words and len(w) > 2)
 
         boosted_scores = np.copy(sim_scores)
 
         for idx, chunk in enumerate(self.chunks):
-            # Only boost if base TF-IDF score shows vocabulary overlap
             if sim_scores[idx] > 0.01:
-                # Category match bonus
                 if category and category.lower() not in ["all", "general", ""]:
                     if chunk["category"] == category.lower():
                         boosted_scores[idx] += 0.15
 
-                # Specific non-stopword term boosts
                 if query_terms:
                     chunk_lower = chunk["content"].lower()
                     matched_terms = sum(1 for t in query_terms if t in chunk_lower)
                     if matched_terms > 0:
                         boosted_scores[idx] += (matched_terms * 0.05)
 
-        # Rank
         top_indices = np.argsort(boosted_scores)[::-1][:top_k]
-        
         results = []
         for idx in top_indices:
-            score = float(boosted_scores[idx])
-            # Strict threshold for match
-            if score > 0.10:
-                item = dict(self.chunks[idx])
-                item["score"] = round(score, 4)
-                results.append(item)
+            cosine_score = float(sim_scores[idx])
+            if cosine_score < min_similarity:
+                continue
+            item = dict(self.chunks[idx])
+            item["score"] = round(cosine_score, 4)
+            item["confidence_score"] = round(float(boosted_scores[idx]), 4)
+            results.append(item)
         return results
 
 # Global singleton instance

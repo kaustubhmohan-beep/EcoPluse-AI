@@ -18,20 +18,22 @@ class RAGTool:
         self,
         query: str,
         category: Optional[str] = "all",
-        top_k: int = 3
+        top_k: int = 3,
+        min_similarity: float = 0.75
     ) -> Dict[str, Any]:
         """
         Queries the hybrid knowledge index and returns structured chunks with source citations.
+        Rejects low-confidence matches below a strict cosine similarity threshold.
         """
-        results = rag_indexer.search(query=query, category=category, top_k=top_k)
-        
+        results = rag_indexer.search(query=query, category=category, top_k=top_k, min_similarity=min_similarity)
+
         if not results:
             return {
                 "status": "empty",
                 "query": query,
                 "category": category,
                 "chunks": [],
-                "message": "No direct knowledge chunks matched your query. Using general thermodynamic conservation principles."
+                "message": "No high-confidence knowledge chunks matched your query. Low-similarity context was filtered out."
             }
 
         formatted_chunks = []
@@ -42,6 +44,7 @@ class RAGTool:
                 "reference": r["reference"],
                 "category": r["category"],
                 "relevance_score": r["score"],
+                "confidence_score": r.get("confidence_score", r["score"]),
                 "content": r["content"]
             })
 
