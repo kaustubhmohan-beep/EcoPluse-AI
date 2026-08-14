@@ -1,8 +1,4 @@
-"""
-EcoPulse AI - RAG Knowledge Indexer & Hybrid Retriever
-Indexes domain literature from energy.txt and JETIR1405001.pdf into
-granular semantic chunks with TF-IDF vectorization and BM25-style keyword matching.
-"""
+
 
 import os
 import re

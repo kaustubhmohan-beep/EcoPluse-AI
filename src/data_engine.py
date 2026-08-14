@@ -1,8 +1,4 @@
-"""
-EcoPulse AI - Smart Meter Data Engine
-High-performance analytics layer leveraging DuckDB for sub-millisecond
-time-series querying, diurnal profile reconstruction, and ACORN cohort benchmarking.
-"""
+
 
 import os
 import glob
