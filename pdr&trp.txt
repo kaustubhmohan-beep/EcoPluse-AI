@@ -1,0 +1,552 @@
+# Comprehensive Energy Intelligence & Conservation Platform
+## Problem Statement, Product Requirements Document (PRD) & Technical Requirements Document (TRD)
+
+---
+
+## 1. Executive Synthesis & Deep Dataset Analysis
+
+Based on an end-to-end analysis of all workspace artifacts—the **Smart Meters in London Energy Dataset** (`daily_dataset.csv`, `hhblock_dataset/`, `informations_households.csv`, `acorn_details.csv`, `uk_bank_holidays.csv`), the **Energy Conservation Knowledge Base** ([energy.txt](file:///c:/Users/Kaustubh/OneDrive/Desktop/LLM%20HACKATHON/energy.txt)), the **Academic Research Paper** ([JETIR1405001.pdf](file:///c:/Users/Kaustubh/OneDrive/Desktop/LLM%20HACKATHON/JETIR1405001.pdf)), the **Dark Sky Weather API Specification** ([api calling.txt](file:///c:/Users/Kaustubh/OneDrive/Desktop/LLM%20HACKATHON/api%20calling.txt)), and the **Hackathon Participant Journey** ([Screenshot 2026-08-14 125411.png](file:///c:/Users/Kaustubh/OneDrive/Desktop/LLM%20HACKATHON/Screenshot%202026-08-14%20125411.png))—the findings are synthesized below:
+
+### 1.1 Multimodal Workspace Asset Breakdown
+
+| Asset | Type & Format | Core Contents & Technical Dimensions |
+| :--- | :--- | :--- |
+| **London Smart Meter Dataset** (`archive/`) | Multi-GB Time-Series CSVs | **5,566 London households** recorded at 30-minute intervals (`hh_0` to `hh_47`) and daily aggregates (median, mean, max, count, std, sum, min) from Nov 2011 to Mar 2014 (~167M readings). Household metadata includes tariff type (**Standard vs. Time-of-Use/ToU**) and CACI **ACORN socio-demographic classifications** (Affluent, Comfortable, Adversity, Acorn A–Q). |
+| **Energy Heuristics** ([energy.txt](file:///c:/Users/Kaustubh/OneDrive/Desktop/LLM%20HACKATHON/energy.txt)) | Domain Rules & Efficiency Formulas | Quantitative conservation heuristics across appliances: Lighting (CFL/LED 70–75% savings, Rs.700/yr per 20W CFL swap, dirty bulb lumen absorption), HVAC (3–5% energy change per 1°C thermostat adjustment above 22°C, 40% savings with shading/fans), Refrigerators (door seal test, defrosting, coil dust maintenance), Water Heaters (18% savings reducing 60°C $\rightarrow$ 50°C), Standby/Phantom loads (40% sleep-mode cut). |
+| **Research Paper** ([JETIR1405001.pdf](file:///c:/Users/Kaustubh/OneDrive/Desktop/LLM%20HACKATHON/JETIR1405001.pdf)) | Academic Publication (JETIR) | *Ashvin M. Maheshwari (2014)*: Highlights global energy crisis, 16% transmission/generation loss, and consumer behavioral apathy due to lack of real-time visibility. Proposes automated sensor-triggered load controllers (555 timer delay circuits, LDR light sensors, LM35 heat sensors) and emphasizes that consumers require **tailored, real-time, actionable advice** linked to their specific routine. |
+| **Weather API Engine** ([api calling.txt](file:///c:/Users/Kaustubh/OneDrive/Desktop/LLM%20HACKATHON/api%20calling.txt)) | REST API Specs & Payloads | Dark Sky / OpenWeather REST specifications: Real-time, hourly (48h), daily (7d), and historical (*Time Machine*) meteorological parameters (temperature, apparent "feels-like" temperature, dew point, humidity, cloud cover, wind speed, UV index, severe weather alerts). |
+| **Hackathon Architecture** ([Screenshot](file:///c:/Users/Kaustubh/OneDrive/Desktop/LLM%20HACKATHON/Screenshot%202026-08-14%20125411.png)) | Pipeline Roadmap | 6-stage architecture: `01 Choose Theme` $\rightarrow$ `02 Receive Dataset` $\rightarrow$ `03 Build RAG Pipeline` $\rightarrow$ `04 Build Conversational Chatbot` $\rightarrow$ `05 Deploy & Submit` $\rightarrow$ `06 Evaluation`. |
+
+---
+
+## 2. Identified Gaps & Formal Problem Statement
+
+### 2.1 Core Gaps in Current Solutions
+
+1. **The "Data Rich, Insight Poor" Smart Meter Paradox**: Smart meters produce 48 half-hourly readings daily, but consumers receive only retroactive monthly utility bills without granular diagnostic insights or appliance-level breakdown.
+2. **Weather-Blind Consumption**: Household heating/cooling accounts for over 50% of domestic power variation. Without automated weather API integration, consumers cannot anticipate upcoming cold snaps or heat waves to pre-adjust thermostats and avoid peak tariff spikes.
+3. **Time-of-Use (ToU) Tariff Misalignment**: Over 20% of modern households are on dynamic ToU tariffs. Consumers lack real-time decision-support tools to schedule high-drain appliances (EV chargers, heat pumps, washing machines) during off-peak hours.
+4. **Generic vs. Context-Aware Recommendations**: Existing energy advice is static and generic. Advice fails to cross-reference the user's demographic context (ACORN group), historical baseline, and local microclimate.
+5. **Static Dashboards vs. Interactive Conversational Problem Solving**: Traditional utility portals force users to interpret complex graphs. Users lack an interactive conversational copilot that can retrieve energy-saving heuristics (RAG), pull real-time weather forecasts via tool calling, and compute concrete financial savings on demand.
+
+```
++---------------------------------------------------------------------------------------------+
+|                                    THE VALUE GAP                                            |
+|                                                                                             |
+|   [5,566 Households Smart Meter Data]   +   [Real-Time Weather API]                         |
+|   (30-min telemetry, ToU/Std tariffs)       (Hourly forecast, apparent temp, alerts)        |
+|                                     \       /                                               |
+|                                      v     v                                                |
+|                   +---------------------------------------+                                 |
+|                   |   CURRENT STATE: SILOED & UNUSABLE   |                                 |
+|                   | - Static retroactive monthly bills    |                                 |
+|                   | - Unpredictable tariff bill shocks    |                                 |
+|                   | - Generic, non-actionable tips        |                                 |
+|                   +---------------------------------------+                                 |
+|                                      |                                                      |
+|                                      v [SOLUTION: AGENTIC RAG + TOOL CALLING]               |
+|                   +---------------------------------------+                                 |
+|                   |   EcoPulse AI: CONVERSATIONAL COPILOT |                                 |
+|                   | - Real-time meter anomaly detection   |                                 |
+|                   | - Weather-predictive load shifting    |                                 |
+|                   | - Grounded RAG appliance advice       |                                 |
+|                   | - Dynamic ToU tariff arbitrage        |                                 |
+|                   +---------------------------------------+                                 |
++---------------------------------------------------------------------------------------------+
+```
+
+### 2.2 Formal Problem Statement
+
+> **"Residential energy consumers and facility managers lack an intelligent, real-time mechanism to translate high-frequency smart meter telemetry and dynamic Time-of-Use (ToU) tariffs into actionable, cost-saving behaviors. Because existing systems fail to dynamically correlate household energy loads with microclimate weather forecasts and domain conservation knowledge, consumers suffer from avoidable peak-rate bill shocks, undetected standby anomalies, and inefficient appliance utilization.**
+> 
+> **To solve this, there is an urgent need for an Agentic AI Energy Copilot that couples Retrieval-Augmented Generation (RAG) over verified energy-efficiency literature with autonomous Weather & Tariff API Tool Calling, enabling users to receive instant energy diagnostics, predictive load-shifting schedules, and quantifiable financial savings through a natural conversational interface."**
+
+---
+
+## 3. Product Requirements Document (PRD)
+
+### 3.1 Product Overview & Vision
+* **Product Name**: **EcoPulse AI** (The Intelligent Energy & Tariff Optimization Copilot)
+* **Mission**: Empower households and commercial property managers to cut energy consumption by 15–30% and reduce electricity bills through automated smart meter analytics, weather-predictive load scheduling, and conversational RAG-backed guidance.
+
+### 3.2 Target Personas & Use Cases
+
+```mermaid
+graph TD
+    A[EcoPulse AI Users] --> B[Persona 1: Budget-Conscious Homeowner]
+    A --> C[Persona 2: Tech-Savvy ToU / EV Owner]
+    A --> D[Persona 3: Small Business / Property Manager]
+
+    B --> B1["'Why was my bill £45 higher last week?'"]
+    B --> B2["'How can I reduce water heating and lighting costs?'"]
+
+    C --> C1["'When should I schedule my EV charging tomorrow?'"]
+    C --> C2["'Will tomorrow's cold snap trigger peak surge rates?'"]
+
+    D --> D1["'Detect nighttime baseload / phantom loads'"]
+    D --> D2["'Generate energy audit report across 10 units'"]
+```
+
+1. **The Budget-Conscious Homeowner (ACORN Adversity / Comfortable)**:
+   * *Pain Point*: Confused by fluctuating electricity bills; unaware of how small habits (standby power, dirty AC filters, water heater setpoint) translate to monthly expenses.
+   * *Goal*: Ask plain-language questions to receive immediate diagnostics and personalized low-cost efficiency steps.
+2. **The Dynamic Tariff / EV Homeowner (ACORN Affluent / ToU Tariff)**:
+   * *Pain Point*: Subscribed to dynamic Time-of-Use pricing; vulnerable to massive cost spikes if high-power appliances run during peak grid windows.
+   * *Goal*: Automatically check upcoming weather forecasts to predict cooling/heating loads and receive optimized run-time schedules.
+3. **The Facility / Property Manager**:
+   * *Pain Point*: Managing multiple units with irregular consumption spikes and undetected baseline leakage.
+   * *Goal*: Benchmark energy profiles against demographic cohorts, run automated anomaly scans, and verify circuit-level load reduction.
+
+---
+
+### 3.3 Functional Requirements (FR)
+
+```mermaid
+flowchart LR
+    subgraph Core Features
+        FR1[FR-1: Conversational RAG Copilot]
+        FR2[FR-2: Dynamic Weather API Tool Calling]
+        FR3[FR-3: Smart Meter Analytics & Disaggregation]
+        FR4[FR-4: ToU Tariff Cost Optimizer]
+        FR5[FR-5: Anomaly & Phantom Load Detector]
+        FR6[FR-6: Household Cohort Benchmarking]
+    end
+```
+
+#### FR-1: Conversational RAG Copilot & Knowledge Retrieval
+* **Description**: A natural language conversational interface grounded on domain energy literature ([energy.txt](file:///c:/Users/Kaustubh/OneDrive/Desktop/LLM%20HACKATHON/energy.txt), [JETIR1405001.pdf](file:///c:/Users/Kaustubh/OneDrive/Desktop/LLM%20HACKATHON/JETIR1405001.pdf), and appliance specifications).
+* **Capabilities**:
+  * Answering queries on appliance optimization (HVAC thermostat setpoints, water heaters, lighting retrofit ROI, refrigeration maintenance).
+  * Synthesizing mathematical formulas into explicit financial projections (e.g., *"Lowering water heater from 60°C to 50°C saves 18% on water heating costs, saving ~£38/year"*).
+  * Citing verified source documents to eliminate LLM hallucinations.
+
+#### FR-2: Autonomous Real-Time Weather API Tool Calling
+* **Description**: Agentic tool calling mechanism interfacing with weather endpoints (`/forecast`, `/history`).
+* **Capabilities**:
+  * Fetching real-time ambient temperature, apparent "feels-like" temperature, solar cloud cover, and humidity for the household’s coordinates.
+  * Detecting weather extremes (e.g., temperatures dropping below 5°C or exceeding 28°C) and triggering proactive load alerts.
+  * Correlating historical weather records with smart meter spikes to separate weather-driven demand from appliance malfunction.
+
+#### FR-3: Smart Meter Telemetry Analytics & Load Disaggregation
+* **Description**: Ingestion and analytical processing of 30-minute smart meter readings (`hh_0` to `hh_47`) and daily aggregates.
+* **Capabilities**:
+  * Visualizing diurnal load profiles (morning peak, mid-day lull, evening peak, overnight baseload).
+  * Disaggregating baseline standby loads (vampire power) vs. active operational spikes.
+  * Providing daily, weekly, and monthly statistical comparisons (mean, max, median, standard deviation).
+
+#### FR-4: Time-of-Use (ToU) Tariff Optimizer
+* **Description**: Algorithmic engine that evaluates household tariff structures (`stdorToU`) against dynamic time blocks.
+* **Capabilities**:
+  * Identifying off-peak, standard, and peak surge time windows.
+  * Providing optimal scheduling recommendations for heavy loads (dishwashers, washing machines, EV chargers, electric water heating).
+  * Calculating exact cost differentials between peak and off-peak execution.
+
+#### FR-5: Anomaly Detection & Phantom Load Sentry
+* **Description**: Statistical and heuristic anomaly detection over time-series smart meter streams.
+* **Capabilities**:
+  * Detecting anomalous overnight baseloads (e.g., continuous draw >0.5 kWh between 01:00 and 05:00 indicating refrigeration seal failures, HVAC short cycling, or unmanaged server equipment).
+  * Generating instant alert cards with step-by-step diagnostic checklists (e.g., flashlight door seal test from `energy.txt`).
+
+#### FR-6: ACORN Demographic Cohort Benchmarking
+* **Description**: Contextual energy scoring comparing the user’s household against anonymized peers within the same ACORN classification (Affluent, Comfortable, Adversity, Acorn A–Q).
+* **Capabilities**:
+  * Informing users whether they consume above or below their demographic median.
+  * Providing tailored recommendations based on housing type, income bracket, and lifestyle factors.
+
+---
+
+### 3.4 Non-Functional Requirements (NFR)
+
+| Metric / Dimension | Requirement Target | Verification Method |
+| :--- | :--- | :--- |
+| **Response Latency** | End-to-end chatbot response $\le 1.8\text{ seconds}$ (streaming tokens starts $< 400\text{ ms}$). | Automated API benchmark testing under 100 concurrent requests. |
+| **RAG Factual Accuracy** | Zero hallucinations on energy formulas; Faithfulness score $\ge 0.92$ (RAGAS framework). | Synthetic test suite of 100 domain questions evaluated with ground truth citations. |
+| **API Availability & Resilience** | $99.9\%$ uptime; fallback cached weather data when external API rate limits are reached. | Circuit breaker pattern + Redis cache fallback. |
+| **Data Privacy & Security** | GDPR compliance; pseudonymization of household identifiers (`LCLid`); encrypted at rest (AES-256) & in transit (TLS 1.3). | Automated vulnerability scans & penetration testing. |
+| **Scalability** | Capable of querying over 100M+ smart meter rows in $< 50\text{ ms}$ via indexed columnar parquet/duckdb storage. | Load testing on 5,566 London household records. |
+
+---
+
+### 3.5 User Stories & Acceptance Criteria
+
+```
++----------------------------------------------------------------------------------------------------+
+| USER STORY 1: Weather-Driven Tariff Advisory                                                       |
++----------------------------------------------------------------------------------------------------+
+| AS A: Homeowner on a dynamic Time-of-Use (ToU) tariff                                              |
+| I WANT TO: Ask "What's the best time to run heavy appliances tomorrow given the weather?"           |
+| SO THAT: I can avoid expensive peak electricity rates and minimize my energy bill.                |
+|                                                                                                    |
+| ACCEPTANCE CRITERIA:                                                                               |
+| 1. System calls the Weather API tool for tomorrow's hourly temperature and cloud cover.            |
+| 2. System queries the ToU tariff schedule for low-cost off-peak windows.                          |
+| 3. System returns an interactive response recommending specific hour windows (e.g. 13:00 - 16:00) |
+|    along with estimated savings in £/kWh compared to evening peak hours.                           |
++----------------------------------------------------------------------------------------------------+
+```
+
+```
++----------------------------------------------------------------------------------------------------+
+| USER STORY 2: Anomaly & Phantom Load Diagnosis                                                     |
++----------------------------------------------------------------------------------------------------+
+| AS A: Facility manager or resident                                                                 |
+| I WANT TO: Ask "Why was my energy usage unusually high at 3 AM yesterday?"                         |
+| SO THAT: I can identify malfunctioning equipment or wasteful vampire draws.                        |
+|                                                                                                    |
+| ACCEPTANCE CRITERIA:                                                                               |
+| 1. System retrieves 30-min smart meter blocks for the specified date and flags overnight deviations|
+|    exceeding 2 standard deviations above baseline.                                                 |
+| 2. System searches the RAG vector store for relevant appliance failure heuristics (refrigerator     |
+|    compressors, defrost heaters, standby chargers).                                                |
+| 3. System presents a diagnostic action checklist (e.g., testing door seals, unplugging chargers).  |
++----------------------------------------------------------------------------------------------------+
+```
+
+---
+
+## 4. Technical Requirements Document (TRD)
+
+### 4.1 System Architecture
+
+```mermaid
+flowchart TD
+    subgraph Client Layer
+        UI[Next.js / React Web Interface]
+        Chat[Chatbot Widget & Analytics Dashboard]
+    end
+
+    subgraph API Gateway & Controller Layer
+        Gateway[FastAPI REST & WebSocket Gateway]
+        Auth[Auth & Rate Limiting Guard]
+        Router[Agentic Intent Router / Orchestrator]
+    end
+
+    subgraph LLM & Agent Core
+        Agent[LangChain / LlamaIndex Agent]
+        PromptEngine[Prompt & Context Assembly]
+        Model[LLM: Gemini / GPT-4o]
+    end
+
+    subgraph Tool Calling Layer
+        ToolExec[Tool Execution Dispatcher]
+        WeatherTool[Weather API Tool - Dark Sky/OpenWeather]
+        MeterTool[Smart Meter Analytics Tool - DuckDB/Pandas]
+        TariffTool[ToU Tariff Calculator Tool]
+        AcornTool[Demographic Benchmark Tool]
+    end
+
+    subgraph RAG Knowledge Layer
+        Retriever[Hybrid Vector + BM25 Retriever]
+        Reranker[Cross-Encoder Reranker]
+        VectorDB[(ChromaDB / Qdrant Vector Store)]
+        DocStore[(Document Store: Energy Tips, Research, Guides)]
+    end
+
+    subgraph Data & Storage Layer
+        TimeSeriesDB[(Parquet / DuckDB Smart Meter Store)]
+        WeatherCache[(Redis Cache - Weather & Session State)]
+        MetadataDB[(PostgreSQL - Household Profiles & Acorn Data)]
+    end
+
+    UI <--> Gateway
+    Chat <--> Gateway
+    Gateway --> Auth --> Router
+    Router <--> Agent
+    Agent <--> PromptEngine <--> Model
+    Agent <--> ToolExec
+    ToolExec --> WeatherTool --> WeatherCache
+    ToolExec --> MeterTool --> TimeSeriesDB
+    ToolExec --> TariffTool --> MetadataDB
+    ToolExec --> AcornTool --> MetadataDB
+    Agent <--> Retriever
+    Retriever <--> VectorDB
+    Retriever <--> DocStore
+    Retriever --> Reranker --> Agent
+```
+
+---
+
+### 4.2 Data Pipeline & Data Modeling
+
+The platform processes three core data streams:
+1. **Time-Series Telemetry**:
+   * Raw 30-minute block CSVs (`hh_0` to `hh_47`) converted to columnar Apache Parquet format partitioned by month and household ID (`LCLid`).
+   * Summary daily metrics (`daily_dataset.csv`) ingested into DuckDB for sub-millisecond aggregation queries (`SUM`, `AVG`, `MAX`, `STDDEV`).
+2. **Contextual Knowledge & Embeddings**:
+   * Knowledge ingestion from [energy.txt](file:///c:/Users/Kaustubh/OneDrive/Desktop/LLM%20HACKATHON/energy.txt) (appliance efficiency rules) and [JETIR1405001.pdf](file:///c:/Users/Kaustubh/OneDrive/Desktop/LLM%20HACKATHON/JETIR1405001.pdf) (circuit architectures and conservation literature).
+   * Chunking strategy: Recursive character splitting with `chunk_size = 500` tokens and `chunk_overlap = 80` tokens.
+   * Embeddings generated using `text-embedding-3-small` / `all-MiniLM-L6-v2` and stored in ChromaDB/Qdrant.
+3. **External Real-time Weather Telemetry**:
+   * Ingestion of Dark Sky / OpenWeather JSON payloads normalized into a unified schema: `timestamp`, `temp_c`, `apparent_temp_c`, `humidity_pct`, `cloud_cover_pct`, `precip_rate`, `uv_index`.
+
+#### Core Database Schemas
+
+```sql
+-- Household Metadata Table
+CREATE TABLE households (
+    lclid VARCHAR(20) PRIMARY KEY,
+    tariff_type VARCHAR(10) NOT NULL, -- 'Std' or 'ToU'
+    acorn_code VARCHAR(10),           -- 'ACORN-A' through 'ACORN-Q'
+    acorn_group VARCHAR(20),          -- 'Affluent', 'Comfortable', 'Adversity'
+    latitude DECIMAL(9, 6) DEFAULT 51.5074,
+    longitude DECIMAL(9, 6) DEFAULT -0.1278,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Daily Energy Aggregation Table (DuckDB / Parquet View)
+CREATE TABLE daily_meter_summary (
+    lclid VARCHAR(20),
+    reading_date DATE,
+    energy_sum_kwh DECIMAL(8, 4),
+    energy_mean_kwh DECIMAL(8, 4),
+    energy_max_kwh DECIMAL(8, 4),
+    energy_min_kwh DECIMAL(8, 4),
+    energy_std_kwh DECIMAL(8, 4),
+    baseline_night_kwh DECIMAL(8, 4), -- 00:00 - 05:30 aggregate
+    PRIMARY KEY (lclid, reading_date)
+);
+
+-- Weather Telemetry Table
+CREATE TABLE weather_hourly (
+    recorded_at TIMESTAMP WITH TIME ZONE PRIMARY KEY,
+    temperature DECIMAL(5, 2),
+    apparent_temperature DECIMAL(5, 2),
+    humidity DECIMAL(4, 2),
+    cloud_cover DECIMAL(4, 2),
+    wind_speed DECIMAL(5, 2),
+    precipitation_type VARCHAR(20),
+    weather_summary VARCHAR(100)
+);
+```
+
+---
+
+### 4.3 Agentic Tool Calling & Function Schemas
+
+The LLM is provided with structured tool definitions conforming to the OpenAI/Gemini Function Calling format.
+
+```json
+[
+  {
+    "name": "get_weather_forecast",
+    "description": "Fetch real-time, hourly, or 7-day weather forecast for the household location to predict heating/cooling demand.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "latitude": { "type": "number", "description": "Latitude of the target location." },
+        "longitude": { "type": "number", "description": "Longitude of the target location." },
+        "forecast_type": { "type": "string", "enum": ["current", "hourly", "daily"], "description": "Forecast resolution." },
+        "hours_ahead": { "type": "integer", "description": "Number of hours ahead (1-48)." }
+      },
+      "required": ["latitude", "longitude", "forecast_type"]
+    }
+  },
+  {
+    "name": "analyze_smart_meter_consumption",
+    "description": "Retrieve and analyze historical 30-minute and daily smart meter consumption data for a household.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "household_id": { "type": "string", "description": "The unique household LCLid (e.g. MAC000002)." },
+        "start_date": { "type": "string", "description": "Start date in YYYY-MM-DD format." },
+        "end_date": { "type": "string", "description": "End date in YYYY-MM-DD format." },
+        "granularity": { "type": "string", "enum": ["half_hourly", "daily"], "description": "Time resolution." },
+        "detect_anomalies": { "type": "boolean", "description": "Whether to run statistical outlier detection." }
+      },
+      "required": ["household_id", "start_date", "end_date"]
+    }
+  },
+  {
+    "name": "calculate_tariff_cost_and_optimal_schedule",
+    "description": "Calculate exact electricity costs under Standard vs Time-of-Use (ToU) tariffs and determine cheapest appliance operational windows.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "household_id": { "type": "string", "description": "Unique household LCLid." },
+        "appliance_type": { "type": "string", "enum": ["ev_charger", "washing_machine", "dishwasher", "water_heater", "heat_pump", "general"], "description": "Target appliance." },
+        "power_draw_kw": { "type": "number", "description": "Average power draw in kW (e.g., 7.0 for EV, 2.0 for washing machine)." },
+        "duration_hours": { "type": "number", "description": "Run duration in hours." },
+        "target_date": { "type": "string", "description": "Target schedule date in YYYY-MM-DD format." }
+      },
+      "required": ["household_id", "appliance_type", "power_draw_kw", "duration_hours"]
+    }
+  },
+  {
+    "name": "retrieve_energy_conservation_guidance",
+    "description": "Query the RAG knowledge vector store for domain-specific appliance efficiency heuristics, circuit specs, and ROI formulas.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "query": { "type": "string", "description": "Semantic search query regarding appliance conservation, lighting, HVAC, water heating, or standby power." },
+        "appliance_category": { "type": "string", "enum": ["lighting", "hvac", "refrigeration", "water_heater", "electronics", "circuit_design", "all"] }
+      },
+      "required": ["query"]
+    }
+  }
+]
+```
+
+---
+
+### 4.4 Agent Execution & Orchestration Sequence
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor User as User / Homeowner
+    participant UI as Chat Web UI
+    participant Agent as EcoPulse Agent Orchestrator
+    participant ToolWeather as Weather API Tool (Dark Sky)
+    participant ToolMeter as Smart Meter Analytics (DuckDB)
+    participant ToolRAG as RAG Vector Store (ChromaDB)
+    participant LLM as Foundation LLM (Gemini/GPT-4o)
+
+    User->>UI: "Why was my bill so high last week, and what should I do tomorrow when it gets colder?"
+    UI->>Agent: Forward user query + session context (LCLid: MAC000022, ToU Tariff)
+    
+    Agent->>LLM: Formulate Plan (System Prompt + Function Definitions)
+    LLM-->>Agent: Function Calls Required: [analyze_smart_meter_consumption, get_weather_forecast, retrieve_energy_conservation_guidance]
+    
+    par Parallel Tool Execution
+        Agent->>ToolMeter: analyze_smart_meter_consumption(MAC000022, "2013-01-10", "2013-01-17")
+        ToolMeter-->>Agent: { "daily_avg": "24.5 kWh", "peak_spike": "18:00-21:00 (5.8 kWh)", "overnight_baseline": "0.8 kWh" }
+    and
+        Agent->>ToolWeather: get_weather_forecast(lat=51.5, lon=-0.12, forecast_type="hourly", hours_ahead=24)
+        ToolWeather-->>Agent: { "tomorrow_temp_min": "1.2 C", "apparent_temp": "-2.0 C", "peak_cold_window": "06:00-09:00" }
+    and
+        Agent->>ToolRAG: retrieve_energy_conservation_guidance("heating thermostat adjustment, ToU peak reduction")
+        ToolRAG-->>Agent: { "chunks": ["3-5% saving per 1C thermostat drop", "pre-heating during off-peak slots saves 30%"] }
+    end
+
+    Agent->>LLM: Synthesize final prompt with tool responses + RAG context
+    LLM-->>Agent: Stream structured actionable response with exact kWh breakdowns & schedule
+    Agent-->>UI: Deliver streaming response with interactive charts & action items
+    UI-->>User: Visual bill breakdown, weather advisory, and optimized heating schedule
+```
+
+---
+
+### 4.5 API Specifications (FastAPI Gateway)
+
+#### 1. `POST /api/v1/chat/completions`
+* **Purpose**: Primary conversational endpoint supporting streaming Server-Sent Events (SSE).
+* **Request Payload**:
+```json
+{
+  "household_id": "MAC000022",
+  "messages": [
+    { "role": "user", "content": "How will tomorrow's weather impact my electricity bill and what should I do?" }
+  ],
+  "stream": true
+}
+```
+* **Response**: SSE stream containing token chunks, tool-call status tags, and metadata references.
+
+#### 2. `GET /api/v1/analytics/household/{lclid}/diagnostic`
+* **Purpose**: Computes instant energy diagnostic metrics for a given household over a date range.
+* **Query Parameters**: `start_date`, `end_date`, `include_anomalies` (bool).
+* **Response Payload**:
+```json
+{
+  "household_id": "MAC000022",
+  "tariff_type": "ToU",
+  "acorn_group": "Affluent",
+  "metrics": {
+    "total_kwh": 342.15,
+    "daily_mean_kwh": 11.40,
+    "peak_window_ratio": 0.42,
+    "standby_vampire_load_kwh": 0.35,
+    "estimated_cost_gbp": 68.43
+  },
+  "anomalies_detected": [
+    {
+      "timestamp": "2013-01-14T03:30:00Z",
+      "reading_kwh": 1.45,
+      "expected_kwh": 0.22,
+      "severity": "HIGH",
+      "suspected_cause": "Refrigeration door seal leak or unmanaged heating appliance"
+    }
+  ]
+}
+```
+
+#### 3. `GET /api/v1/weather/forecast`
+* **Purpose**: Proxies and caches real-time weather forecasts with energy-specific thermal index indicators.
+* **Response Payload**:
+```json
+{
+  "location": "London, UK",
+  "coordinates": { "lat": 51.5074, "lon": -0.1278 },
+  "current": {
+    "temperature_c": 6.5,
+    "apparent_temperature_c": 3.8,
+    "humidity_pct": 82,
+    "summary": "Overcast"
+  },
+  "energy_thermal_stress_index": "MODERATE_HEATING_DEMAND"
+}
+```
+
+---
+
+### 4.6 Verification & Testing Strategy
+
+```mermaid
+graph LR
+    subgraph Test Suite
+        T1[Unit Tests: Tool Parsers & Tariff Math]
+        T2[Integration Tests: Weather API & DuckDB]
+        T3[RAG Evaluation: RAGAS Metrics]
+        T4[End-to-End Synthetic User Dialogues]
+    end
+
+    T1 --> Pass[CI/CD Build Verification]
+    T2 --> Pass
+    T3 --> Pass
+    T4 --> Pass
+```
+
+1. **RAG Quality Evaluation (RAGAS)**:
+   * **Faithfulness**: Ensure generated recommendations strictly reference numbers from [energy.txt](file:///c:/Users/Kaustubh/OneDrive/Desktop/LLM%20HACKATHON/energy.txt) (e.g., 18% water heater savings, 3–5% HVAC per degree).
+   * **Answer Relevance**: Measure cosine similarity between user energy query and generated guidance.
+   * **Context Recall**: Verify that the hybrid vector retriever captures relevant chunks from [JETIR1405001.pdf](file:///c:/Users/Kaustubh/OneDrive/Desktop/LLM%20HACKATHON/JETIR1405001.pdf) for circuit and sensor questions.
+2. **Tool Calling Determinism**:
+   * Mocked API testing of `get_weather_forecast` under edge cases (API timeout, malformed coordinates, rate-limiting HTTP 429).
+3. **Data Ingestion Performance**:
+   * Ensure 30-minute block aggregation queries over 5,566 households complete within $\le 50\text{ ms}$ using DuckDB indexes.
+
+---
+
+## 5. Summary & Hackathon Execution Roadmap
+
+```
++----------------------------------------------------------------------------------------------------+
+| STAGE 1: Data Ingestion & Preprocessing                                                            |
+| - Convert London Smart Meter 30-min block CSVs to partitioned Parquet files.                       |
+| - Chunk and index 'energy.txt' and 'JETIR1405001.pdf' into ChromaDB vector store.                  |
++----------------------------------------------------------------------------------------------------+
+                                                  |
+                                                  v
++----------------------------------------------------------------------------------------------------+
+| STAGE 2: RAG Pipeline & Tool Calling Layer                                                         |
+| - Build LangChain/LlamaIndex hybrid retriever (Dense Vector + BM25).                                |
+| - Implement Weather API client (Dark Sky / OpenWeather) with Redis caching.                        |
+| - Implement Smart Meter Analytics & ToU Tariff calculation tools.                                 |
++----------------------------------------------------------------------------------------------------+
+                                                  |
+                                                  v
++----------------------------------------------------------------------------------------------------+
+| STAGE 3: Agent Orchestrator & Conversational Chatbot                                               |
+| - Implement Agentic Router with dynamic tool-calling logic and fallback policies.                  |
+| - Build Next.js / React interactive chat UI with real-time streaming and chart widgets.             |
++----------------------------------------------------------------------------------------------------+
+                                                  |
+                                                  v
++----------------------------------------------------------------------------------------------------+
+| STAGE 4: Verification, Evaluation & Submission                                                     |
+| - Run RAGAS evaluation on factual accuracy and tariff optimization precision.                      |
+| - Package backend & frontend into Docker containers and deploy live URL for hackathon scoring.     |
++----------------------------------------------------------------------------------------------------+
+```
+
+This comprehensive specification directly connects the raw smart meter dataset, academic literature, domain energy guidelines, and weather API endpoints into an actionable, state-of-the-art AI product.

@@ -1,0 +1,28 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build outputs
+.next/
+dist/
+build/
+
+# Virtual environments & local models/data
+venv/
+.venv/
+__pycache__/
+*.onnx
+*.bin
+*.zip
+*.tar.gz
+*.db
+*.sqlite
+
+# Environment variables
+.env
+.env*.local
+
+archive/daily_dataset.csv
+*.duckdb
+# Local datasets
+archive/

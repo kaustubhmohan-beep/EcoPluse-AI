@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EcoPulse AI — Energy Intelligence & Tariff Optimization Copilot</title>
+  <meta name="description" content="EcoPulse AI: Intelligent smart meter analytics, weather-driven demand forecasting, and Time-of-Use tariff optimization for UK households." />
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Montserrat:wght@500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+
+  <!-- External Libraries -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+  <!-- Application Styles -->
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body>
+  <div class="app-container">
+
+    <!-- ═══════════════════════════ SIDEBAR NAVIGATION ═══════════════════════════ -->
+    <aside class="sidebar" id="sidebar">
+      <!-- Header -->
+      <div class="sidebar-header">
+        <span class="material-symbols-outlined brand-icon" style="font-variation-settings: 'FILL' 1;">eco</span>
+        <div>
+          <h1 class="brand-title">EcoPulse AI</h1>
+          <p class="brand-subtitle">Energy Conservation Intelligence</p>
+        </div>
+      </div>
+
+      <!-- CTA -->
+      <div class="sidebar-cta">
+        <button class="btn-diagnostics" onclick="switchPanel('chat'); focusChatInput();">
+          <span class="material-symbols-outlined">add</span>
+          Run Diagnostics
+        </button>
+      </div>
+
+      <!-- Main Navigation Links -->
+      <nav class="sidebar-nav">
+        <a class="nav-link active" data-panel="chat" onclick="switchPanel('chat', this)">
+          <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">add_chart</span>
+          <span>New Audit</span>
+        </a>
+        <a class="nav-link" data-panel="meter" onclick="switchPanel('meter', this)">
+          <span class="material-symbols-outlined">monitoring</span>
+          <span>Dashboard</span>
+        </a>
+        <a class="nav-link" data-panel="weather" onclick="switchPanel('weather', this)">
+          <span class="material-symbols-outlined">thermostat</span>
+          <span>Thermal Variance</span>
+        </a>
+        <a class="nav-link" data-panel="tariff" onclick="switchPanel('tariff', this)">
+          <span class="material-symbols-outlined">description</span>
+          <span>ESG Report</span>
+        </a>
+        <a class="nav-link" data-panel="households" onclick="switchPanel('households', this)">
+          <span class="material-symbols-outlined">history</span>
+          <span>History</span>
+        </a>
+
+        <!-- Pinned Sessions -->
+        <div class="nav-group-label">Pinned Sessions</div>
+        <a class="nav-link" onclick="quickSelectHousehold('MAC000002')">
+          <span class="material-symbols-outlined" style="font-size:16px; opacity:0.7;">push_pin</span>
+          <span style="font-size:0.85rem;">Block C Thermal</span>
+        </a>
+        <a class="nav-link" onclick="switchPanel('tariff')">
+          <span class="material-symbols-outlined" style="font-size:16px; opacity:0.7;">push_pin</span>
+          <span style="font-size:0.85rem;">ESG Report 2026</span>
+        </a>
+
+        <!-- Recent Activity -->
+        <div class="nav-group-label">Recent Activity</div>
+        <a class="nav-link" onclick="sendQuickQuery('Analyze turbine stress and heat pump coefficient of performance for MAC000002')">
+          <span class="material-symbols-outlined" style="font-size:16px; opacity:0.5;">chat_bubble</span>
+          <span style="font-size:0.85rem; text-overflow:ellipsis; overflow:hidden; white-space:nowrap;">Turbine Stress Anal...</span>
+        </a>
+        <a class="nav-link" onclick="sendQuickQuery('Scan substation telemetry for anomaly detection and peak load surge')">
+          <span class="material-symbols-outlined" style="font-size:16px; opacity:0.5;">chat_bubble</span>
+          <span style="font-size:0.85rem; text-overflow:ellipsis; overflow:hidden; white-space:nowrap;">Grid Anomaly Detec...</span>
+        </a>
+      </nav>
+
+      <!-- Sidebar Footer -->
+      <div class="sidebar-footer">
+        <a class="nav-link" onclick="alert('Settings menu open: Configure API preferences, tariff definitions, and model parameters.')">
+          <span class="material-symbols-outlined">settings</span>
+          <span>Settings</span>
+        </a>
+        <a class="nav-link" onclick="alert('EcoPulse Support & Documentation active.')">
+          <span class="material-symbols-outlined">help</span>
+          <span>Support</span>
+        </a>
+      </div>
+    </aside>
+
+    <!-- ═══════════════════════════ TOP NAVIGATION HEADER ═══════════════════════════ -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <h2 class="page-title" id="pageTitle">⚡ New Audit</h2>
+        <span class="page-subtitle" id="pageSubtitle">Intelligent energy analytics, weather-driven forecasting, and tariff optimization</span>
+      </div>
+
+      <div class="topbar-right">
+        <!-- Top navigation links -->
+        <nav class="topbar-tabs">
+          <a class="tab-item active" onclick="switchPanel('chat')">Analysis</a>
+          <a class="tab-item" onclick="switchPanel('tariff')">Reports</a>
+          <a class="tab-item" onclick="switchPanel('meter')">Assets</a>
+        </nav>
+
+        <!-- Global Household Selector -->
+        <div class="hh-input-box">
+          <label>ID</label>
+          <input type="text" id="globalHouseholdId" placeholder="MAC000002" value="MAC000002" maxlength="9" onchange="syncHouseholdId(this.value)" />
+        </div>
+
+        <!-- Search Bar -->
+        <div class="search-widget">
+          <span class="material-symbols-outlined">search</span>
+          <input type="text" placeholder="Search parameters..." onkeydown="if(event.key==='Enter'){ sendQuickQuery(this.value); this.value=''; }" />
+        </div>
+
+        <!-- Live Status Badge -->
+        <div class="status-badge">
+          <div class="status-dot"></div>
+          <span>LIVE</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- ═══════════════════════════ MAIN CONTENT CANVAS ═══════════════════════════ -->
+    <main class="main-canvas tech-grid-bg">
+      <div class="gradient-void-overlay"></div>
+
+      <!-- ─── PANEL 1: AI COPILOT (NEW AUDIT) ─── -->
+      <section id="panel-chat" class="panel active">
+        <div class="chat-canvas-container">
+          
+          <!-- Hero Section -->
+          <div class="hero-header" id="heroHeader">
+            <h1 class="hero-title">Analyze your grid</h1>
+            <p class="hero-desc">Connect your data sources or ask EcoPulse to run predictive models on your current infrastructure state.</p>
+          </div>
+
+          <!-- Bento Cards Quick Launch -->
+          <div class="bento-grid" id="bentoQuickGrid" style="margin-bottom: 2.5rem;">
+            <!-- Card 1 -->
+            <button class="bento-card glow-hover" onclick="sendQuickQuery('Forecast demand and predict peak loads for the next 72 hours based on historical weather patterns.')">
+              <div class="card-header-icon">
+                <span class="material-symbols-outlined">timeline</span>
+              </div>
+              <h3 class="card-title">Forecast demand</h3>
+              <p class="card-subtitle">Predict peak loads for the next 72 hours based on historical weather patterns.</p>
+            </button>
+
+            <!-- Card 2 -->
+            <button class="bento-card glow-hover" onclick="sendQuickQuery('Optimize renewable mix and rebalance active generation assets for maximum efficiency.')">
+              <div class="card-header-icon" style="color: var(--kinetic-green);">
+                <span class="material-symbols-outlined">donut_small</span>
+              </div>
+              <h3 class="card-title">Optimize mix</h3>
+              <p class="card-subtitle">Rebalance active generation assets to maximize renewable utilization.</p>
+            </button>
+
+            <!-- Card 3 -->
+            <button class="bento-card glow-hover" onclick="sendQuickQuery('Scan substation telemetry and smart meter readings for anomaly detection and failure risk.')">
+              <div class="card-header-icon" style="color: var(--error);">
+                <span class="material-symbols-outlined">warning</span>
+              </div>
+              <h3 class="card-title">Identify anomalies</h3>
+              <p class="card-subtitle">Scan substation telemetry for variance indicative of component failure.</p>
+            </button>
+          </div>
+
+          <!-- Chat Stream Messages -->
+          <div class="chat-messages-wrap" id="chatMessagesWrap">
+            <div id="chatMessages"></div>
+            <div id="typingIndicator" class="typing-indicator hidden">
+              <div class="typing-dot"></div>
+              <div class="typing-dot"></div>
+              <div class="typing-dot"></div>
+              <span>EcoPulse AI running diagnostics...</span>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ─── PANEL 2: SMART METER ANALYTICS (DASHBOARD) ─── -->
+      <section id="panel-meter" class="panel">
+        <div class="glass-card control-card">
+          <h3 class="card-title">📊 Household Meter Telemetry Query</h3>
+          <p class="card-subtitle">Analyze 30-minute half-hourly slot readings, daily consumption trends, vampire standby loads, and ACORN cohort benchmarks.</p>
+          <div class="form-grid">
+            <div class="form-field">
+              <label>Household LCLid</label>
+              <input type="text" id="meterHouseId" value="MAC000002" placeholder="e.g. MAC000002" />
+            </div>
+            <div class="form-field">
+              <label>Start Date</label>
+              <input type="date" id="meterStartDate" value="2013-01-01" />
+            </div>
+            <div class="form-field">
+              <label>End Date</label>
+              <input type="date" id="meterEndDate" value="2013-01-14" />
+            </div>
+          </div>
+          <button class="btn-primary" onclick="loadMeterData()">
+            <span class="material-symbols-outlined">search</span>
+            Analyze Meter Data
+          </button>
+        </div>
+
+        <!-- KPI Stats Row -->
+        <div class="stats-grid" id="meterStats" style="display:none;">
+          <div class="stat-card">
+            <div class="stat-value" id="statTotal">—</div>
+            <div class="stat-label">Total kWh</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="statMean">—</div>
+            <div class="stat-label">Daily Mean</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="statMax">—</div>
+            <div class="stat-label">Peak Day</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="statVampire">—</div>
+            <div class="stat-label">Vampire Baseline</div>
+          </div>
+        </div>
+
+        <!-- Daily Trend Chart -->
+        <div class="glass-card chart-card" id="dailyChartCard" style="display:none;">
+          <h3 class="card-title">📈 Daily Consumption Trend (kWh)</h3>
+          <div class="chart-wrap"><canvas id="dailyChart"></canvas></div>
+        </div>
+
+        <!-- Diurnal 48 Half-Hour Slots Chart -->
+        <div class="glass-card chart-card" id="diurnalChartCard" style="display:none;">
+          <h3 class="card-title">🕐 Diurnal Load Profile (48 Half-Hour Time Slots)</h3>
+          <div class="chart-wrap"><canvas id="diurnalChart"></canvas></div>
+        </div>
+
+        <!-- Anomalies List -->
+        <div class="glass-card chart-card" id="anomalyCard" style="display:none;">
+          <h3 class="card-title">🚨 Anomalies & Operational Alerts</h3>
+          <div id="anomalyList" style="margin-top:1rem;"></div>
+        </div>
+
+        <!-- Cohort Benchmark -->
+        <div class="glass-card chart-card" id="cohortCard" style="display:none;">
+          <h3 class="card-title">👥 ACORN Demographic Cohort Benchmark</h3>
+          <div class="chart-wrap"><canvas id="cohortChart"></canvas></div>
+        </div>
+      </section>
+
+      <!-- ─── PANEL 3: WEATHER & THERMAL DEMAND (THERMAL VARIANCE) ─── -->
+      <section id="panel-weather" class="panel">
+        <div class="glass-card control-card">
+          <h3 class="card-title">🌤️ Weather & Thermal Stress Analysis</h3>
+          <p class="card-subtitle">Correlate ambient temperature, Heating/Cooling Degree Days (HDD/CDD), and wind chill with domestic heating demand.</p>
+          <div class="form-grid">
+            <div class="form-field">
+              <label>Latitude</label>
+              <input type="number" id="weatherLat" value="51.5074" step="0.0001" />
+            </div>
+            <div class="form-field">
+              <label>Longitude</label>
+              <input type="number" id="weatherLon" value="-0.1278" step="0.0001" />
+            </div>
+            <div class="form-field">
+              <label>Target Date</label>
+              <input type="date" id="weatherDate" value="2013-01-15" />
+            </div>
+          </div>
+          <button class="btn-primary" onclick="loadWeatherData()">
+            <span class="material-symbols-outlined">cloud</span>
+            Fetch Weather Analysis
+          </button>
+        </div>
+
+        <!-- Weather Summary Display -->
+        <div class="weather-summary-grid" id="weatherSummary" style="display:none;">
+          <div class="weather-hero">
+            <div class="weather-temp" id="weatherTemp">—°C</div>
+            <div class="weather-feel" id="weatherFeel">Feels like —°C</div>
+            <div class="weather-desc" id="weatherDesc">—</div>
+          </div>
+          <div>
+            <div class="weather-metrics-list" id="weatherMetrics"></div>
+            <div class="thermal-badge" id="thermalBadge"></div>
+            <div class="energy-advisory" id="energyAdvisory"></div>
+          </div>
+        </div>
+
+        <!-- Hourly Weather Chart -->
+        <div class="glass-card chart-card" id="weatherChartCard" style="display:none;">
+          <h3 class="card-title">🌡️ 24-Hour Diurnal Temperature Profile (°C)</h3>
+          <div class="chart-wrap"><canvas id="weatherChart"></canvas></div>
+        </div>
+      </section>
+
+      <!-- ─── PANEL 4: TARIFF SIMULATOR (ESG REPORT) ─── -->
+      <section id="panel-tariff" class="panel">
+        <div class="glass-card control-card">
+          <h3 class="card-title">💰 Time-of-Use (ToU) Appliance Load Shift Simulator</h3>
+          <p class="card-subtitle">Simulate cycling high-draw flexible appliances into off-peak electricity rate windows (01:00-07:00).</p>
+          <div class="form-grid">
+            <div class="form-field">
+              <label>Appliance Type</label>
+              <select id="tariffAppliance" onchange="autoFillApplianceParams()">
+                <option value="ev_charger">🚗 EV Charger (7.2 kW, 4.0 hrs)</option>
+                <option value="heat_pump">🌡️ Heat Pump (3.5 kW, 6.0 hrs)</option>
+                <option value="washing_machine">👕 Washing Machine (2.2 kW, 1.5 hrs)</option>
+                <option value="dishwasher">🍽️ Dishwasher (1.8 kW, 2.0 hrs)</option>
+                <option value="water_heater">🚿 Immersion Water Heater (3.0 kW, 2.5 hrs)</option>
+                <option value="general">⚡ Custom Power Load</option>
+              </select>
+            </div>
+            <div class="form-field">
+              <label>Power Draw (kW)</label>
+              <input type="number" id="tariffPower" placeholder="e.g. 7.2" step="0.1" />
+            </div>
+            <div class="form-field">
+              <label>Duration (Hours)</label>
+              <input type="number" id="tariffDuration" placeholder="e.g. 4.0" step="0.5" />
+            </div>
+            <div class="form-field">
+              <label>Household ID (Optional)</label>
+              <input type="text" id="tariffHouseId" placeholder="MAC000002" value="MAC000002" />
+            </div>
+          </div>
+          <button class="btn-primary" onclick="loadTariffData()">
+            <span class="material-symbols-outlined">calculate</span>
+            Calculate Optimal Schedule
+          </button>
+        </div>
+
+        <!-- Tariff Simulation Results -->
+        <div id="tariffResults" style="display:none;">
+          <div class="tariff-windows-grid">
+            <div class="window-card red">
+              <div class="window-time">16:00 – 19:00</div>
+              <div class="window-label">🔴 Peak Surge</div>
+              <div class="window-rate">£0.38 / kWh</div>
+              <div class="window-cost" id="peakCost">—</div>
+            </div>
+            <div class="window-card yellow">
+              <div class="window-time">07:00 – 16:00 & 19:00 – 23:00</div>
+              <div class="window-label">🟡 Standard</div>
+              <div class="window-rate">£0.16 / kWh</div>
+              <div class="window-cost" id="standardCost">—</div>
+            </div>
+            <div class="window-card green">
+              <div class="window-time">01:00 – 07:00</div>
+              <div class="window-label">✅ Green Off-Peak</div>
+              <div class="window-rate">£0.08 / kWh</div>
+              <div class="window-cost" id="offPeakCost">—</div>
+            </div>
+          </div>
+
+          <div class="savings-highlight" id="savingsHighlight"></div>
+
+          <div class="glass-card chart-card">
+            <h3 class="card-title">📊 Cycle Cost Comparison across ToU Windows</h3>
+            <div class="chart-wrap"><canvas id="tariffChart"></canvas></div>
+          </div>
+
+          <div class="glass-card advice-card" id="tariffAdvice" style="line-height:1.6;"></div>
+        </div>
+      </section>
+
+      <!-- ─── PANEL 5: HOUSEHOLD EXPLORER (HISTORY) ─── -->
+      <section id="panel-households" class="panel">
+        <div class="glass-card control-card">
+          <h3 class="card-title">🏠 London Household Dataset Explorer</h3>
+          <p class="card-subtitle">Browse the London Smart Meter dataset of 5,566 households with ToU tariff classifications and ACORN demographic categories.</p>
+          <button class="btn-primary" style="margin-top:1rem;" onclick="loadHouseholds()">
+            <span class="material-symbols-outlined">refresh</span>
+            Load Sample Households
+          </button>
+        </div>
+        <div id="householdGrid" class="household-cards-grid"></div>
+      </section>
+
+    </main>
+
+    <!-- ═══════════════════════════ FLOATING BOTTOM COMMAND INPUT BAR ═══════════════════════════ -->
+    <div class="command-bar-wrapper">
+      <div class="command-bar-inner">
+        <div class="command-input-container">
+          <!-- Attachment action -->
+          <button class="command-action-btn" title="Attach Telemetry / CSV Data" onclick="alert('Telemetry upload active: Select CSV or smart meter export file.')">
+            <span class="material-symbols-outlined">attach_file</span>
+          </button>
+
+          <!-- Input Textarea -->
+          <textarea class="command-textarea" id="chatInput" placeholder="Ask anything about your grid..." rows="1"></textarea>
+
+          <!-- Mic button -->
+          <button class="command-action-btn" title="Voice Input" onclick="alert('Voice recognition active: Speak your query...')">
+            <span class="material-symbols-outlined">mic</span>
+          </button>
+
+          <!-- Signature Think Button -->
+          <button class="btn-think" id="sendBtn" onclick="sendMessage()">
+            <span class="material-symbols-outlined" style="font-size:18px;">bolt</span>
+            <span>Think</span>
+          </button>
+        </div>
+
+        <div class="command-disclaimer">
+          EcoPulse AI can make mistakes. Consider verifying critical operational data.
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Application Logic -->
+  <script src="/static/app.js"></script>
+</body>
+</html>
